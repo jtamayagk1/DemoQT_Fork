@@ -1,6 +1,4 @@
-#This buildspec.yml file is run during the CodeBuild section of the AWS CodePipeline
 version: 0.2
-#Retrieves secrets from SecretManager and sets them as enviornment variables
 env:
   secrets-manager:
     LOGIN: stage/sonar:SONARTOKEN
@@ -8,25 +6,16 @@ env:
     ORG: stage/sonar:ORG
     PROJECT: stage/sonar:PROJECT
 phases:
-#installs the dotnet runtime version using the latest release of version 6
   install:
     runtime-versions:
-      dotnet: 6.x
+      dotnet: 3.x
   pre_build:
     commands:
-    #Updates Advanced Package Tool library 
       - apt-get update
-    #Installs jq, used for command line based JSON processing
       - apt-get install -y jq
-    #Makes call to download the sonar scanner cli
-      - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747-linux.zip
       - dotnet tool install --global dotnet-sonarscanner
       - dotnet tool install --global dotnet-coverage
       - dotnet tool install --global dotnet-reportgenerator-globaltool
-      - sh $pwd
-      - unzip ./sonar-scanner-cli-4.7.0.2747-linux.zip
-      - ls $pwd
-      - export PATH=$PATH:./sonar-scanner-4.7.0.2747-linux/bin/
   build:
     commands:
       - dotnet sonarscanner begin 
@@ -36,11 +25,8 @@ phases:
         /d:sonar.host.url="$HOST"
         /d:"sonar.verbose=true"
         /d:sonar.cs.vscoveragexml.reportsPaths="coverage.xml"
-        /d:sonar.exclusions="**/*.html, **/*.cshtml, **/*.css, **/*.yml, **/*.json"
+        /d:sonar.exclusions="**/*.html, **/*.cshtml, **/*.css, **/*.yml, **/*.json, **/*.js"
       - dotnet build --no-incremental
       - dotnet-coverage collect 'dotnet test' -f xml -o "coverage.xml"
       - dotnet sonarscanner end /d:sonar.login="$LOGIN"
       - if [ $(jq -r '.projectStatus.status' coverage.xml) = ERROR ] ; then $CODEBUILD_BUILD_SUCCEEDING -eq 0 ;fi
-artifacts:
-  files:
-    - ./**/*
