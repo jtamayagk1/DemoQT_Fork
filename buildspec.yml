@@ -3,10 +3,10 @@ version: 0.2
 #Retrieves secrets from SecretManager and sets them as enviornment variables
 env:
   secrets-manager:
-    LOGIN: prod/sonar:SONARTOKEN
-    HOST: prod/sonar:HOST
-    ORG: prod/sonar:ORG
-    PROJECT: prod/sonar:PROJECT
+    LOGIN: stage/sonar:SONARTOKEN
+    HOST: stage/sonar:HOST
+    ORG: stage/sonar:ORG
+    PROJECT: stage/sonar:PROJECT
 phases:
 #installs the dotnet runtime version using the latest release of version 6
   install:
